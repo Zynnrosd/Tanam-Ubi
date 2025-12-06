@@ -1,138 +1,62 @@
-# Dashboard Sensor
+# 🌿 Dashboard Monitoring Tanaman
 
-Progressive Web App untuk monitoring sensor secara realtime dengan teknologi modern.
+**Progressive Web App (PWA) modern** untuk memantau kondisi lingkungan tanaman (**Suhu Udara, Kelembaban Tanah, Kelembaban Udara**) secara *realtime* dengan implementasi ketat Object-Oriented Programming (OOP) dan didukung oleh Supabase.
 
-![Dashboard Sensor](https://github.com/user-attachments/assets/c6c83b4f-5349-4b58-800e-7fa70e01fcf4)
+## ✨ Desain & Teknologi
 
-## Fitur
+* **Tema:** Tema Terang (Latar Belakang Putih) dengan aksen Hijau Emerald.
+* **Fokus:** Tampilan modern, minimalis, dan *clean*.
 
-- 🏠 **Home** - Dashboard overview dengan statistik dan grafik sensor
-- 📊 **Realtime Data** - Monitoring data sensor secara langsung dengan update otomatis
-- ⚙️ **Calibration** - Kalibrasi sensor dengan offset dan scale
-- 📋 **Data Log** - Riwayat data sensor dengan fitur pencarian, filter, dan export CSV
-- ℹ️ **About** - Informasi aplikasi dan panduan konfigurasi
+## 🚀 Fitur Utama
 
-## Tech Stack
+| Halaman | Deskripsi Fungsional |
+| :--- | :--- |
+| 🏠 **Dashboard** | Menampilkan kartu nilai sensor terbaru (Suhu Udara, Kelembaban Tanah, Kelembaban Udara) dan **Grafik Statistik Harian** (Min, Max, Avg) yang diolah dari data historis. |
+| 📊 **Tren 24 Jam** | Menampilkan semua data sensor dalam **satu grafik multiline** untuk analisis tren selama 24 jam terakhir. |
+| ⚙️ **Kalibrasi** | Mengatur parameter kalibrasi (`Offset`, `Scale`, `Min/Max Value`) untuk setiap sensor dengan penerapan **Exception Handling** untuk validasi batas. |
+| 📋 **Log Data** | Riwayat data sensor dengan fitur pencarian, filter, dan ekspor CSV. |
+| 🌱 **Profil Tanaman** | Mengelola profil tanaman (misalnya: Sawi, Cabai). Pengguna dapat **menambah** profil baru dan **mengatur Treshold Optimal** yang otomatis di-upsert ke tabel `calibration_settings` untuk monitoring. |
 
-- **React 18** - UI Library
-- **TypeScript** - Type Safety
-- **Vite** - Build Tool
-- **Tailwind CSS** - Styling
-- **Supabase** - Backend & Realtime Database
-- **Recharts** - Data Visualization
-- **Lucide React** - Icons
-- **Vite PWA Plugin** - Progressive Web App
+***
 
-## Getting Started
+## 🧩 Implementasi Prinsip OOP Wajib
+
+Struktur aplikasi dibangun di atas arsitektur OOP yang ketat untuk memastikan modularitas dan *maintainability*.
+
+| Prinsip OOP | Penerapan Kunci | File Terkait |
+| :--- | :--- | :--- |
+| **Interface & Abstraksi** | Mendefinisikan kontrak **`ISensor`** dan **`IDataSource`** untuk memisahkan logika bisnis dari implementasi sensor spesifik dan sumber data (Supabase). | `src/classes/Sensor.ts`, `src/lib/data-source.ts` |
+| **Inheritance** | **`AbstractSensor`** menyediakan logika dasar kalibrasi dan validasi yang diwariskan ke semua sensor spesifik. | `src/classes/Sensor.ts` |
+| **Polymorphism** | Metode **`sensor.getRawValue(data)`** dipanggil secara universal di seluruh aplikasi (misalnya di halaman Dashboard untuk menghitung Min/Max/Avg) meskipun setiap sensor memiliki implementasi pengambilan data dari kolom yang berbeda (`air_temperature`, `soil_moisture`, dll.). | `src/classes/Sensor.ts`, `src/pages/Home.tsx` |
+| **Exception Handling** | Implementasi custom error **`CalibrationError`** dan **`PlantProfileError`** untuk menangani kesalahan validasi *runtime* (misalnya, jika nilai kalibrasi melanggar batas Min/Max) dan kegagalan CRUD data. | `src/classes/Sensor.ts`, `src/pages/Calibration.tsx`, `src/pages/About.tsx` |
+
+***
+
+## 🛠️ Tech Stack
+
+-   **Frontend:** React 18, TypeScript, Vite
+-   **Styling:** Tailwind CSS (Theme Light/Emerald)
+-   **Data Visualization:** Recharts
+-   **Backend & Database:** Supabase (digunakan untuk Database & Simulasi MQTT/Realtime)
+
+***
+
+## ⚙️ Getting Started
 
 ### Prerequisites
 
-- Node.js 18+
-- npm or yarn
+-   Node.js 18+
+-   npm atau yarn
 
 ### Installation
 
 ```bash
 # Clone repository
-git clone https://github.com/nabwelll/Dasshboard-Sensor.git
-cd Dasshboard-Sensor
+git clone [YOUR_REPO_URL]
+cd Dashboard-Monitoring-Tanaman
 
 # Install dependencies
 npm install
 
 # Start development server
 npm run dev
-
-#diterminal rain run
-npm run realtime-data
-
-```
-
-### Environment Variables
-
-Buat file `.env` di root project:
-
-```env
-VITE_SUPABASE_URL=your-supabase-url
-VITE_SUPABASE_ANON_KEY=your-anon-key
-```
-
-## Supabase Setup
-
-### 1. Buat tabel sensor_data
-
-```sql
-CREATE TABLE sensor_data (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  timestamp TIMESTAMPTZ NOT NULL,
-  temperature DOUBLE PRECISION NOT NULL,
-  humidity DOUBLE PRECISION NOT NULL,
-  pressure DOUBLE PRECISION NOT NULL,
-  light DOUBLE PRECISION NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-### 2. Buat tabel calibration_settings
-
-```sql
-CREATE TABLE calibration_settings (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  sensor_type TEXT NOT NULL UNIQUE,
-  offset DOUBLE PRECISION DEFAULT 0,
-  scale DOUBLE PRECISION DEFAULT 1,
-  min_value DOUBLE PRECISION,
-  max_value DOUBLE PRECISION,
-  unit TEXT,
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-## PWA Installation
-
-### Android / Chrome
-1. Buka menu browser (⋮)
-2. Pilih "Install app" atau "Add to Home screen"
-3. Konfirmasi instalasi
-4. Buka dari home screen
-
-### iOS / Safari
-1. Tap tombol Share (↑)
-2. Scroll dan pilih "Add to Home Screen"
-3. Beri nama aplikasi
-4. Tap "Add"
-
-## Screenshots
-
-### Home
-![Home](https://github.com/user-attachments/assets/c6c83b4f-5349-4b58-800e-7fa70e01fcf4)
-
-### Realtime Data
-![Realtime](https://github.com/user-attachments/assets/e6b4f2f3-2294-4eb3-90d3-a683de183523)
-
-### Calibration
-![Calibration](https://github.com/user-attachments/assets/0eb4c108-c3ae-4b3d-888b-bc8377287886)
-
-### Data Log
-![Data Log](https://github.com/user-attachments/assets/7f856eef-632b-408d-b6e8-10d611a88942)
-
-### About
-![About](https://github.com/user-attachments/assets/01b258e7-ec0e-446c-b669-36b230a5642a)
-
-## Build
-
-```bash
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
-
-## License
-
-MIT License
-
----
-
-Made with ❤️ using React, TypeScript, and Supabase
