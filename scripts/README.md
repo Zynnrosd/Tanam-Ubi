@@ -1,152 +1,62 @@
-# 📊 Sensor Data Scripts
+# 🌿 Dashboard Monitoring Tanaman
 
-Script untuk mengirim dummy data sensor ke Supabase untuk testing dan development.
+**Progressive Web App (PWA) modern** untuk memantau kondisi lingkungan tanaman (**Suhu Udara, Kelembaban Tanah, Kelembaban Udara**) secara *realtime* dengan implementasi ketat Object-Oriented Programming (OOP) dan didukung oleh Supabase.
 
-## 🚀 Setup
+## ✨ Desain & Teknologi
 
-1. **Install dependencies:**
+* **Tema:** Tema Terang (Latar Belakang Putih) dengan aksen Hijau Emerald.
+* **Fokus:** Tampilan modern, minimalis, dan *clean*.
+
+## 🚀 Fitur Utama
+
+| Halaman | Deskripsi Fungsional |
+| :--- | :--- |
+| 🏠 **Dashboard** | Menampilkan kartu nilai sensor terbaru (Suhu Udara, Kelembaban Tanah, Kelembaban Udara) dan **Grafik Statistik Harian** (Min, Max, Avg) yang diolah dari data historis. |
+| 📊 **Tren 24 Jam** | Menampilkan semua data sensor dalam **satu grafik multiline** untuk analisis tren selama 24 jam terakhir. |
+| ⚙️ **Kalibrasi** | Mengatur parameter kalibrasi (`Offset`, `Scale`, `Min/Max Value`) untuk setiap sensor dengan penerapan **Exception Handling** untuk validasi batas. |
+| 📋 **Log Data** | Riwayat data sensor dengan fitur pencarian, filter, dan ekspor CSV. |
+| 🌱 **Profil Tanaman** | Mengelola profil tanaman (misalnya: Sawi, Cabai). Pengguna dapat **menambah** profil baru dan **mengatur Treshold Optimal** yang otomatis di-upsert ke tabel `calibration_settings` untuk monitoring. |
+
+***
+
+## 🧩 Implementasi Prinsip OOP Wajib
+
+Struktur aplikasi dibangun di atas arsitektur OOP yang ketat untuk memastikan modularitas dan *maintainability*.
+
+| Prinsip OOP | Penerapan Kunci | File Terkait |
+| :--- | :--- | :--- |
+| **Interface & Abstraksi** | Mendefinisikan kontrak **`ISensor`** dan **`IDataSource`** untuk memisahkan logika bisnis dari implementasi sensor spesifik dan sumber data (Supabase). | `src/classes/Sensor.ts`, `src/lib/data-source.ts` |
+| **Inheritance** | **`AbstractSensor`** menyediakan logika dasar kalibrasi dan validasi yang diwariskan ke semua sensor spesifik. | `src/classes/Sensor.ts` |
+| **Polymorphism** | Metode **`sensor.getRawValue(data)`** dipanggil secara universal di seluruh aplikasi (misalnya di halaman Dashboard untuk menghitung Min/Max/Avg) meskipun setiap sensor memiliki implementasi pengambilan data dari kolom yang berbeda (`air_temperature`, `soil_moisture`, dll.). | `src/classes/Sensor.ts`, `src/pages/Home.tsx` |
+| **Exception Handling** | Implementasi custom error **`CalibrationError`** dan **`PlantProfileError`** untuk menangani kesalahan validasi *runtime* (misalnya, jika nilai kalibrasi melanggar batas Min/Max) dan kegagalan CRUD data. | `src/classes/Sensor.ts`, `src/pages/Calibration.tsx`, `src/pages/About.tsx` |
+
+***
+
+## 🛠️ Tech Stack
+
+-   **Frontend:** React 18, TypeScript, Vite
+-   **Styling:** Tailwind CSS (Theme Light/Emerald)
+-   **Data Visualization:** Recharts
+-   **Backend & Database:** Supabase (digunakan untuk Database & Simulasi MQTT/Realtime)
+
+***
+
+## ⚙️ Getting Started
+
+### Prerequisites
+
+-   Node.js 18+
+-   npm atau yarn
+
+### Installation
+
 ```bash
+# Clone repository
+git clone [YOUR_REPO_URL]
+cd Dashboard-Monitoring-Tanaman
+
+# Install dependencies
 npm install
-```
 
-Ini akan install `dotenv` yang diperlukan untuk script.
-
-2. **Pastikan `.env` sudah dikonfigurasi:**
-```
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-```
-
-3. **Setup tabel di Supabase** (jika belum ada):
-
-Jalankan SQL ini di Supabase SQL Editor:
-
-```sql
-CREATE TABLE sensor_data (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  timestamp TIMESTAMPTZ NOT NULL,
-  temperature DOUBLE PRECISION NOT NULL,
-  humidity DOUBLE PRECISION NOT NULL,
-  pressure DOUBLE PRECISION NOT NULL,
-  light DOUBLE PRECISION NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Buat index untuk query lebih cepat
-CREATE INDEX idx_sensor_data_timestamp ON sensor_data(timestamp DESC);
-```
-
-## 📝 Scripts
-
-### 1. Seed Data (24 jam historis)
-
-Mengirim 24 jam data sensor historis (1 data per jam):
-
-```bash
-npm run seed-data
-```
-
-**Output:**
-```
-📊 Mulai seed data sensor...
-📝 Menyiapkan 24 data untuk dikirim...
-✅ Berhasil mengirim 24 data sensor
-📍 Data sudah tersimpan di tabel sensor_data
-```
-
-### 2. Realtime Data (streaming)
-
-Mengirim data sensor baru setiap 10 detik secara terus-menerus:
-
-```bash
-npm run realtime-data
-```
-
-**Output:**
-```
-🚀 Mulai mengirim data sensor realtime...
-⏱️  Interval: 10 detik
-🛑 Tekan Ctrl+C untuk menghentikan
-
-📡 Data #1 dikirim:
-┌─────────────┬────────────────────────────────┐
-│ (index)     │ Values                         │
-├─────────────┼────────────────────────────────┤
-│ Timestamp   │ '01/12/2024, 14:30:45'        │
-│ Suhu        │ '25.32°C'                     │
-│ Kelembaban  │ '58.45%'                      │
-│ Tekanan     │ '1012.15 hPa'                 │
-│ Cahaya      │ '450.23 lux'                  │
-└─────────────┴────────────────────────────────┘
-```
-
-Untuk menghentikan, tekan **Ctrl+C**.
-
-## 🔧 Customization
-
-### Mengubah interval pengiriman data
-
-Edit file `scripts/realtime-sensor-data.js`:
-
-```javascript
-// Ubah 10000 menjadi milliseconds yang diinginkan
-// 10000 ms = 10 detik
-const interval = setInterval(sendRealtimeData, 10000);
-```
-
-Contoh:
-- 5 detik: `5000`
-- 1 detik: `1000`
-- 1 menit: `60000`
-
-### Mengubah range nilai sensor
-
-Edit fungsi `generateRealtimeData()` atau `generateSensorData()`:
-
-```javascript
-// Contoh: ubah range suhu
-temperature: 18 + Math.random() * 12,  // Range: 18-30°C (default: 22-30°C)
-
-// Contoh: ubah range kelembaban
-humidity: 30 + Math.random() * 40,     // Range: 30-70% (default: 45-65%)
-```
-
-## 🐛 Troubleshooting
-
-### Error: "VITE_SUPABASE_URL atau VITE_SUPABASE_ANON_KEY tidak ditemukan"
-
-**Solusi:** Pastikan file `.env` ada di root project dan berisi:
-```
-VITE_SUPABASE_URL=https://...
-VITE_SUPABASE_ANON_KEY=...
-```
-
-### Error: "Table 'sensor_data' not found"
-
-**Solusi:** Buat tabel di Supabase SQL Editor (lihat section Setup di atas).
-
-### Error: "Permission denied"
-
-**Solusi:** Pastikan Row Level Security (RLS) policy di Supabase mengizinkan insert untuk anon key, atau disable RLS untuk development.
-
-## 📋 Workflow Typical
-
-```bash
-# 1. Setup awal: seed 24 jam data
-npm run seed-data
-
-# 2. Development: streaming data realtime
-npm run realtime-data
-
-# 3. Lihat di dashboard
+# Start development server
 npm run dev
-```
-
-## 📚 Referensi
-
-- [Supabase JS Client](https://supabase.com/docs/reference/javascript/introduction)
-- [Sensor Data Types](../src/types/database.ts)
-
----
-
-Made with ❤️ for Dashboard Sensor project
